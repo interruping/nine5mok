@@ -8,7 +8,7 @@ import json
 from sklearn.model_selection import train_test_split
 INPUT_PATH = './input/'
 
-train_df = pd.read_csv(INPUT_PATH + 'train22k.csv')
+train_df = pd.read_csv(INPUT_PATH + 'train50k.csv')
 
 train_imgs = [str(img) + '.png' for img in train_df.index]
 train_labels = [np.asarray(json.loads(str_label)) for str_label in train_df.boards]
