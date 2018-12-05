@@ -41,22 +41,34 @@ class Nine5MokModel(object):
         # x = self._residual_conv(self._input, 32) 
         # x = tf.layers.max_pooling2d(x, [2, 2], strides=2)
 
-        # 160, 120 -> 80, 60
-        x = self._inception_conv(self._input, 32) 
+        # 120, 90 -> 60, 45
+        x = self._inception_conv(self._input, 8) 
         x = tf.layers.max_pooling2d(x, [2, 2], strides=2)
        
-        # 80, 60 -> 40, 30
+        # 60, 45 -> 30, 22
+        x = self._inception_conv(x, 16)
+        x = tf.layers.max_pooling2d(x, [2, 2], strides=2)
+       
+
+        # 30, 22 -> 15, 11
+        x = self._inception_conv(x, 32)
+        x = tf.layers.max_pooling2d(x, [2, 2], strides=2)
+       
+        # 15, 11 -> 7, 5 
         x = self._inception_conv(x, 64)
         x = tf.layers.max_pooling2d(x, [2, 2], strides=2)
-       
-
-        # 40, 30 -> 20, 15
+        
+        # 7, 5 -> 3, 2
+        x = self._inception_conv(x, 128)
+        x = tf.layers.max_pooling2d(x, [2, 2], strides=2)
+        #x = tf.layers.conv2d(x, 2, [7, 3], strides=1, padding='VALID', activation=tf.nn.relu)
+        
+        # 3, 2 -> 1, 1
         x = self._inception_conv(x, 256)
         x = tf.layers.max_pooling2d(x, [2, 2], strides=2)
-       
-
-        # 20, 15 -> 9, 9 
-        x = tf.layers.conv2d(x, 2, [12, 7], strides=1, padding='VALID', activation=tf.nn.relu)
+        x = tf.reshape(x, shape=(-1, 256))
+        x = tf.layers.dense(x, 9 * 9 * 2, activation=tf.nn.sigmoid)            
+        x = tf.reshape(x, shape=(-1, 9, 9, 2))
         self._logits = x
         self._loss_op = tf.losses.mean_squared_error(self._labels, self._logits, reduction=tf.losses.Reduction.MEAN) 
 
@@ -65,7 +77,7 @@ class Nine5MokModel(object):
         with tf.control_dependencies(update_ops): 
             self._train_op = optimizer.minimize(loss=self._loss_op, global_step=self._global_step)
 
-        acc, self._accuracy_op = tf.metrics.accuracy(labels=self._labels, predictions=self._logits, name='accuracy_operation')
+        acc, self._accuracy_op = tf.metrics.accuracy(labels=self._labels, predictions=tf.round(self._logits), name='accuracy_operation')
         self._loss_summary = tf.summary.scalar('loss', self._loss_op)
 
         self._accuracy_summary = tf.summary.scalar('accuracy', self._accuracy_op)
@@ -100,34 +112,43 @@ class Nine5MokModel(object):
         ## first pipe line
         first1x1conv = tf.layers.conv2d(input_tensor, one_channel, [1, 1], strides=1, padding='SAME')
         first1x1conv = tf.nn.leaky_relu(first1x1conv, alpha=0.1)
+        #first1x1conv = tf.nn.sigmoid(first1x1conv)
         #first1x1conv = tf.layers.batch_normalization(first1x1conv, training=self._is_train)
 
         first1x3conv = tf.layers.conv2d(first1x1conv, one_channel, [1, 3], strides=1, padding='SAME')
         first1x3conv = tf.nn.leaky_relu(first1x3conv, alpha=0.1)
+        #first1x3conv = tf.nn.sigmoid(first1x3conv)
         #first1x3conv = tf.layers.batch_normalization(first1x3conv, training=self._is_train)
         first3x1conv = tf.layers.conv2d(first1x3conv, one_channel, [3, 1], strides=1, padding='SAME')
         first3x1conv = tf.nn.leaky_relu(first3x1conv, alpha=0.1)
+        #first3x1conv = tf.nn.sigmoid(first3x1conv)
         #first3x1conv = tf.layers.batch_normalization(first3x1conv, training=self._is_train)
 
         first1x3conv2 = tf.layers.conv2d(first3x1conv, one_channel, [1, 3], strides=1, padding='SAME')
         first1x3conv2 = tf.nn.leaky_relu(first1x3conv2, alpha=0.1)
+        #first1x3conv2 = tf.nn.sigmoid(first1x3conv2)
         #first1x3conv2 = tf.layers.batch_normalization(first1x3conv2, training=self._is_train)
         first3x1conv2 = tf.layers.conv2d(first1x3conv2, one_channel, [3, 1], strides=1, padding='SAME')
         first3x1conv2 = tf.nn.leaky_relu(first3x1conv2, alpha=0.1)
+        #first3x1conv2 = tf.nn.sigmoid(first3x1conv2)
         #first3x1conv2 = tf.layers.batch_normalization(first3x1conv2, training=self._is_train)
         first_output = first3x1conv2
+        
         ## second pipe line
 
         second1x1conv = tf.layers.conv2d(input_tensor, one_channel, [1, 1], strides=1, padding='SAME')
         second1x1conv = tf.nn.leaky_relu(second1x1conv, alpha=0.1)
+        #second1x1conv = tf.nn.sigmoid(second1x1conv) 
         #second1x1conv = tf.layers.batch_normalization(second1x1conv, training=self._is_train)
 
 
         second1x3conv = tf.layers.conv2d(second1x1conv, one_channel, [1, 3], strides=1, padding='SAME')
         second1x3conv = tf.nn.leaky_relu(second1x3conv, alpha=0.1)
+        #second1x3conv = tf.nn.sigmoid(second1x3conv)
         #second1x3conv = tf.layers.batch_normalization(second1x3conv, training=self._is_train)
         second3x1conv = tf.layers.conv2d(second1x3conv, one_channel, [3, 1], strides=1, padding='SAME')
         second3x1conv = tf.nn.leaky_relu(second3x1conv, alpha=0.1)
+        #second3x1conv = tf.nn.sigmoid(second3x1conv)
         #second3x1conv = tf.layers.batch_normalization(second3x1conv, training=self._is_train)
         second_output = second3x1conv
         
@@ -135,6 +156,7 @@ class Nine5MokModel(object):
         third_pool = tf.layers.max_pooling2d(input_tensor, [3, 3], strides=1, padding='SAME')
         third1x1conv = tf.layers.conv2d(third_pool, one_channel, [1, 1], strides=1, padding='SAME')
         third1x1conv = tf.nn.leaky_relu(third1x1conv, alpha=0.1)
+        #third1x1conv = tf.nn.sigmoid(third1x1conv)
         #third1x1conv = tf.layers.batch_normalization(third1x1conv, training=self._is_train)
         third_output = third1x1conv
         
@@ -142,6 +164,7 @@ class Nine5MokModel(object):
         ## fourth pipe line
         fourth1x1conv = tf.layers.conv2d(input_tensor, one_channel, [1, 1], strides=1, padding='SAME')
         fourth1x1conv = tf.nn.leaky_relu(fourth1x1conv, alpha=0.1)
+        #fourth1x1conv = tf.nn.sigmoid(fourth1x1conv)
         #fourth1x1conv = tf.layers.batch_normalization(fourth1x1conv, training=self._is_train)
         fourth_output = fourth1x1conv    
 
@@ -152,10 +175,11 @@ class Nine5MokModel(object):
         self._hook_every_n = every_n
 
     def minibatch_preprocessing(self, minibatch_filenames):
-        BASE_PATH = './input/train50k/'
+        BASE_PATH = './input/train50k_s/'
         img_for_stacking = []
         for filename in minibatch_filenames:
-            img = cv2.imread(BASE_PATH + filename)
+            img = cv2.imread(BASE_PATH + filename, 0)
+            img = np.reshape(img, (90, 120, 1))
             img_for_stacking.append(np.transpose(img, axes=[1, 0, 2]))
         return np.stack(img_for_stacking, axis=0)
 
@@ -303,7 +327,7 @@ class Nine5MokModel(object):
 
 if __name__ == '__main__':
     sess = tf.InteractiveSession()
-    Nine5MokModel(sess, (160, 120), 3)
+    Nine5MokModel(sess, (120, 90), 1)
 
 
 

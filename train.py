@@ -19,7 +19,7 @@ x_train, x_valid, y_train, y_valid = train_test_split(train_imgs,
                                                       train_labels, 
                                                       test_size=0.2, stratify=sum_labels, random_state=1337)
 with tf.Session() as sess:
-    model = Nine5MokModel(sess, (160, 120), 3)
+    model = Nine5MokModel(sess, (120, 90), 1)
     model.restore_latest()
 
     EPOCHS = 50
