@@ -42,31 +42,31 @@ class Nine5MokModel(object):
         # x = tf.layers.max_pooling2d(x, [2, 2], strides=2)
 
         # 120, 90 -> 60, 45
-        x = self._inception_conv(self._input, 8) 
+        x = self._inception_conv(self._input, 16) 
         x = tf.layers.max_pooling2d(x, [2, 2], strides=2)
        
         # 60, 45 -> 30, 22
-        x = self._inception_conv(x, 16)
+        x = self._inception_conv(x, 32)
         x = tf.layers.max_pooling2d(x, [2, 2], strides=2)
        
 
         # 30, 22 -> 15, 11
-        x = self._inception_conv(x, 32)
+        x = self._inception_conv(x, 64)
         x = tf.layers.max_pooling2d(x, [2, 2], strides=2)
        
         # 15, 11 -> 7, 5 
-        x = self._inception_conv(x, 64)
+        x = self._inception_conv(x, 128)
         x = tf.layers.max_pooling2d(x, [2, 2], strides=2)
         
         # 7, 5 -> 3, 2
-        x = self._inception_conv(x, 128)
+        x = self._inception_conv(x, 256)
         x = tf.layers.max_pooling2d(x, [2, 2], strides=2)
         #x = tf.layers.conv2d(x, 2, [7, 3], strides=1, padding='VALID', activation=tf.nn.relu)
         
         # 3, 2 -> 1, 1
-        x = self._inception_conv(x, 256)
+        x = self._inception_conv(x, 512)
         x = tf.layers.max_pooling2d(x, [2, 2], strides=2)
-        x = tf.reshape(x, shape=(-1, 256))
+        x = tf.reshape(x, shape=(-1, 512))
         x = tf.layers.dense(x, 9 * 9 * 2, activation=tf.nn.sigmoid)            
         x = tf.reshape(x, shape=(-1, 9, 9, 2))
         self._logits = x
@@ -109,6 +109,7 @@ class Nine5MokModel(object):
             raise ValueError('output_channel must be multiples of 4.')
 
         one_channel = output_channel // 4 
+        
         ## first pipe line
         first1x1conv = tf.layers.conv2d(input_tensor, one_channel, [1, 1], strides=1, padding='SAME')
         first1x1conv = tf.nn.leaky_relu(first1x1conv, alpha=0.1)
@@ -170,6 +171,7 @@ class Nine5MokModel(object):
 
         return tf.concat([first_output, second_output, third_output, fourth_output], axis=-1)
 
+        
     def set_train_hook(self, every_n, hook):
         self._hook = hook
         self._hook_every_n = every_n

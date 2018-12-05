@@ -23,7 +23,7 @@ with tf.Session() as sess:
     model.restore_latest()
 
     EPOCHS = 50
-    BATCH_SIZE = 25 
+    BATCH_SIZE = 320 
     epochs_tqdm = tqdm(range(EPOCHS))
 
     def validation_hook():
@@ -34,7 +34,7 @@ with tf.Session() as sess:
 
     for epoch in epochs_tqdm:
         epochs_tqdm.set_description('epoch {}'.format(epoch))
-        mean_loss, mean_accuracy = model.train(x_train, y_train, BATCH_SIZE, 1e-4)
+        mean_loss, mean_accuracy = model.train(x_train, y_train, BATCH_SIZE, 1e-3)
         model.save()
         epochs_tqdm.set_postfix(mean_loss=mean_loss, mean_accuracy=mean_accuracy)
 
