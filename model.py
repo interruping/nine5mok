@@ -1,7 +1,5 @@
 import tensorflow as tf
 import numpy as np
-# from tqdm import tqdm_notebook as tqdm
-# from tqdm import tnrange as trange
 from tqdm import tqdm, trange
 from operator import itemgetter
 from batchup import data_source
@@ -32,15 +30,6 @@ class Nine5MokModel(object):
         self._labels = tf.placeholder(tf.float32, shape=(None, self._BOARD_SIZE, self._BOARD_SIZE, 2), name='imgs_label')
         
         self._learning_rate = tf.placeholder(tf.float32, shape=(), name='learning_rate')
-
-        # 640, 480 -> 320, 240
-        # x = self._residual_conv(self._input, 32) 
-        # x = tf.layers.max_pooling2d(x, [2, 2], strides=2)
-
-        # # 320, 240 -> 160, 120
-        # x = self._residual_conv(self._input, 32) 
-        # x = tf.layers.max_pooling2d(x, [2, 2], strides=2)
-
         # 120, 90 -> 60, 45
         x = self._inception_conv(self._input, 16) 
         x = tf.layers.max_pooling2d(x, [2, 2], strides=2)
@@ -61,7 +50,7 @@ class Nine5MokModel(object):
         # 7, 5 -> 3, 2
         x = self._inception_conv(x, 256)
         x = tf.layers.max_pooling2d(x, [2, 2], strides=2)
-        #x = tf.layers.conv2d(x, 2, [7, 3], strides=1, padding='VALID', activation=tf.nn.relu)
+
         
         # 3, 2 -> 1, 1
         x = self._inception_conv(x, 512)
@@ -113,60 +102,42 @@ class Nine5MokModel(object):
         ## first pipe line
         first1x1conv = tf.layers.conv2d(input_tensor, one_channel, [1, 1], strides=1, padding='SAME')
         first1x1conv = tf.nn.leaky_relu(first1x1conv, alpha=0.1)
-        #first1x1conv = tf.nn.sigmoid(first1x1conv)
-        #first1x1conv = tf.layers.batch_normalization(first1x1conv, training=self._is_train)
 
         first1x3conv = tf.layers.conv2d(first1x1conv, one_channel, [1, 3], strides=1, padding='SAME')
         first1x3conv = tf.nn.leaky_relu(first1x3conv, alpha=0.1)
-        #first1x3conv = tf.nn.sigmoid(first1x3conv)
-        #first1x3conv = tf.layers.batch_normalization(first1x3conv, training=self._is_train)
+
         first3x1conv = tf.layers.conv2d(first1x3conv, one_channel, [3, 1], strides=1, padding='SAME')
         first3x1conv = tf.nn.leaky_relu(first3x1conv, alpha=0.1)
-        #first3x1conv = tf.nn.sigmoid(first3x1conv)
-        #first3x1conv = tf.layers.batch_normalization(first3x1conv, training=self._is_train)
 
         first1x3conv2 = tf.layers.conv2d(first3x1conv, one_channel, [1, 3], strides=1, padding='SAME')
         first1x3conv2 = tf.nn.leaky_relu(first1x3conv2, alpha=0.1)
-        #first1x3conv2 = tf.nn.sigmoid(first1x3conv2)
-        #first1x3conv2 = tf.layers.batch_normalization(first1x3conv2, training=self._is_train)
+
         first3x1conv2 = tf.layers.conv2d(first1x3conv2, one_channel, [3, 1], strides=1, padding='SAME')
         first3x1conv2 = tf.nn.leaky_relu(first3x1conv2, alpha=0.1)
-        #first3x1conv2 = tf.nn.sigmoid(first3x1conv2)
-        #first3x1conv2 = tf.layers.batch_normalization(first3x1conv2, training=self._is_train)
         first_output = first3x1conv2
         
         ## second pipe line
 
         second1x1conv = tf.layers.conv2d(input_tensor, one_channel, [1, 1], strides=1, padding='SAME')
         second1x1conv = tf.nn.leaky_relu(second1x1conv, alpha=0.1)
-        #second1x1conv = tf.nn.sigmoid(second1x1conv) 
-        #second1x1conv = tf.layers.batch_normalization(second1x1conv, training=self._is_train)
 
 
         second1x3conv = tf.layers.conv2d(second1x1conv, one_channel, [1, 3], strides=1, padding='SAME')
         second1x3conv = tf.nn.leaky_relu(second1x3conv, alpha=0.1)
-        #second1x3conv = tf.nn.sigmoid(second1x3conv)
-        #second1x3conv = tf.layers.batch_normalization(second1x3conv, training=self._is_train)
         second3x1conv = tf.layers.conv2d(second1x3conv, one_channel, [3, 1], strides=1, padding='SAME')
         second3x1conv = tf.nn.leaky_relu(second3x1conv, alpha=0.1)
-        #second3x1conv = tf.nn.sigmoid(second3x1conv)
-        #second3x1conv = tf.layers.batch_normalization(second3x1conv, training=self._is_train)
         second_output = second3x1conv
         
         ## third pipe line
         third_pool = tf.layers.max_pooling2d(input_tensor, [3, 3], strides=1, padding='SAME')
         third1x1conv = tf.layers.conv2d(third_pool, one_channel, [1, 1], strides=1, padding='SAME')
         third1x1conv = tf.nn.leaky_relu(third1x1conv, alpha=0.1)
-        #third1x1conv = tf.nn.sigmoid(third1x1conv)
-        #third1x1conv = tf.layers.batch_normalization(third1x1conv, training=self._is_train)
         third_output = third1x1conv
         
 
         ## fourth pipe line
         fourth1x1conv = tf.layers.conv2d(input_tensor, one_channel, [1, 1], strides=1, padding='SAME')
         fourth1x1conv = tf.nn.leaky_relu(fourth1x1conv, alpha=0.1)
-        #fourth1x1conv = tf.nn.sigmoid(fourth1x1conv)
-        #fourth1x1conv = tf.layers.batch_normalization(fourth1x1conv, training=self._is_train)
         fourth_output = fourth1x1conv    
 
         return tf.concat([first_output, second_output, third_output, fourth_output], axis=-1)
