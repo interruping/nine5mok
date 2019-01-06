@@ -30,8 +30,8 @@ This Repository contains pre-trained weights that record with 98% validation acc
 - orange line: training values
 - blue line: validation values
 
-![img/training_loss.png](https://github.com/interruping/nine5mok/raw/master/img/training_loss.png)
-![img/training_accuracy.png](https://github.com/interruping/nine5mok/raw/master/img/training_accuracy.png)
+![img/training_loss.png](https://github.com/interruping/nine5mok/raw/master/img/training_loss.png =400px)
+![img/training_accuracy.png](https://github.com/interruping/nine5mok/raw/master/img/training_accuracy.png =400px)
 
 ## Train
 
